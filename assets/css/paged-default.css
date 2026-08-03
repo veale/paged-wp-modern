@@ -244,11 +244,11 @@ body {
 	box-sizing: border-box;
 	max-width: 138mm;
 	margin: 14pt auto 4pt;
-	color: var(--pagedwpm-abstract-accent);
+	color: #1a1a1a;
 	font-family: 'PagedWPM Source Serif', Georgia, 'Times New Roman', serif;
 	font-size: 9.75pt;
 	line-height: 1.44;
-	opacity: 0.86;
+	opacity: 0.8;
 	orphans: 3;
 	widows: 3;
 	box-decoration-break: clone;

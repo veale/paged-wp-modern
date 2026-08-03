@@ -66,9 +66,13 @@ function documentHtml(imagePath) {
 		${paragraphs('Before', 35)}
 		<p data-test-indent="pixels" style="padding-left: 40px;">An imported quotation whose original left padding should become a balanced print indent without an additional first-line indent.</p>
 		<figure><img src="${imagePath}" alt="Evidence chart"><figcaption>Figure 1. Evidence chart.</figcaption></figure>
-		<p>Text with a note<sup><a class="footnote-ref" href="#footnote%3A1.2">[1]</a></sup>.</p>
+		<p>Text with a note<sup><a class="footnote-ref" href="#footnote%3A1.2">[1]</a></sup> and malformed imported notes<sup><a class="footnote-ref" href="#footnote%3A76">[76]</a></sup><sup><a class="footnote-ref" href="#footnote%3A78">[78]</a></sup>.</p>
 		${paragraphs('After', 55)}
-		<ol><li id="footnote:1.2"><p>A representative legal footnote. <a href="#footnote-ref-1">↑</a></p></li></ol>
+		<ol>
+			<li id="footnote:1.2"><p>A representative legal footnote. <a href="#footnote-ref-1">↑</a></p></li>
+			<li id="footnote:76">[1983] QB 1053 <a href="#footnote-ref-76">↑</a></p></li>
+			<li id="footnote:78">[2004] UKHL 21, para 52. <a href="#footnote-ref-78">↑</a></p></li>
+		</ol>
 		<span data-pagedwpm-end-marker></span></div></article>
 		<script id="pagedwpm-config" type="application/json">${config}</script>
 		<script src="/footnotes.js"></script><script src="/controller.js"></script><script src="/paged.js"></script>
@@ -137,6 +141,9 @@ async function render(route) {
 		error: document.querySelector('#pagedwpm-status[data-state="error"]')?.textContent || '',
 		failedImages: document.querySelectorAll('.pagedjs_pages .pagedwpm-image-error').length,
 		footnoteCalls: document.querySelectorAll('.pagedjs_pages .pagedwpm-fn-call').length,
+		footnoteTexts: Array.from(document.querySelectorAll('.pagedjs_pages .pagedwpm-footnote'))
+			.map((footnote) => footnote.textContent.trim()).filter(Boolean),
+		remainingEndnotes: document.querySelectorAll('.pagedjs_pages li[id*="footnote"], .pagedjs_pages li[id*="endnote"]').length,
 		fontFamily: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).fontFamily,
 		textIndent: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).textIndent,
 		frontMatter: (() => {
@@ -170,6 +177,7 @@ async function render(route) {
 				gap: getComputedStyle(label).marginInlineEnd,
 				inlineLabel: getComputedStyle(label).display,
 				inlineText: getComputedStyle(text).display,
+				textColor: getComputedStyle(text).color,
 				maxWidth: getComputedStyle(block).maxWidth,
 				opacity: getComputedStyle(block).opacity,
 				oneParagraph: label.parentElement === text.parentElement && label.parentElement === copy
@@ -237,7 +245,10 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.equal(result.error, '');
 	assert.equal(result.complete, true);
 	assert.equal(result.failedImages, 0);
-	assert.equal(result.footnoteCalls, 1);
+	assert.equal(result.footnoteCalls, 3);
+	assert.ok(result.footnoteTexts.some((text) => text.includes('[1983] QB 1053')));
+	assert.ok(result.footnoteTexts.some((text) => text.includes('[2004] UKHL 21, para 52.')));
+	assert.equal(result.remainingEndnotes, 0);
 	assert.equal(result.sourceHidden, true);
 	assert.equal(result.screenHintDisplay, 'block');
 	assert.equal(result.printHintDisplay, 'none');
@@ -263,8 +274,9 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.ok(Number.parseFloat(result.abstract.gap) > 8);
 	assert.equal(result.abstract.borderLeftWidth, '0px');
 	assert.notEqual(result.abstract.accent, 'rgb(0, 0, 0)');
+	assert.equal(result.abstract.textColor, 'rgb(26, 26, 26)');
 	assert.ok(Number.parseFloat(result.abstract.maxWidth) > 400);
-	assert.ok(Number.parseFloat(result.abstract.opacity) < 1);
+	assert.equal(result.abstract.opacity, '0.8');
 	assert.deepEqual(result.runningHeads, [
 		'',
 		'Current Legal Problems, Vol 79',

@@ -74,9 +74,17 @@
 				anchor.remove();
 			}
 		});
+		clone.querySelectorAll('p, div, span').forEach(function (element) {
+			if (!element.textContent.trim() && !element.children.length) {
+				element.remove();
+			}
+		});
 
 		var onlyChild = clone.children.length === 1 ? clone.children[0] : null;
-		if (onlyChild && onlyChild.tagName === 'P') {
+		var hasDirectText = Array.from(clone.childNodes).some(function (node) {
+			return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
+		});
+		if (onlyChild && onlyChild.tagName === 'P' && !hasDirectText) {
 			return onlyChild.innerHTML.trim();
 		}
 		return clone.innerHTML.trim();

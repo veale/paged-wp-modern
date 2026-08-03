@@ -5,7 +5,7 @@ Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,12 @@ The current version requires the browser print dialog. Fully automated PDF gener
 Yes — you can configure the CSS selector in Settings to match any footnote HTML pattern. The default selector works with Mammoth and Pandoc output.
 
 == Changelog ==
+
+= 2.2.2 =
+* Fixed malformed Mammoth endnotes containing direct text plus a parser-created empty paragraph
+* Prevented those notes from leaking out of the hidden endnote list onto the final PDF page
+* Added regression fixtures matching the malformed footnotes 76 and 78 observed in a live article
+* Restored abstract prose to the body-text colour at 0.8 opacity while retaining its blue sans-serif label
 
 = 2.2.1 =
 * Fixed existing installations silently omitting abstracts because of a stale pre-abstract visibility option
