@@ -5,7 +5,7 @@ Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,11 @@ The current version requires the browser print dialog. Fully automated PDF gener
 Yes — you can configure the CSS selector in Settings to match any footnote HTML pattern. The default selector works with Mammoth and Pandoc output.
 
 == Changelog ==
+
+= 2.2.3 =
+* Removed empty Mammoth footnote callouts and their return-link-only endnotes instead of leaving an orphan list marker on the final page
+* Preserved the consumed footnote number so later footnotes and textual cross-references retain their source numbering
+* Added a browser regression fixture matching the empty footnote 3 observed in a live article
 
 = 2.2.2 =
 * Fixed malformed Mammoth endnotes containing direct text plus a parser-created empty paragraph

@@ -163,13 +163,18 @@
 					noteNumbers.set(noteId, number);
 				}
 
+				var target = callout.parentElement && callout.parentElement.tagName === 'SUP' ?
+					callout.parentElement : callout;
 				var html = cleanNote(note);
 				if (!html) {
+					// Mammoth can emit a referenced endnote containing only its return link.
+					// Remove both empty ends, but retain the consumed number so later
+					// cross-references keep the source document's numbering.
+					target.remove();
+					processedNotes.add(note);
 					return;
 				}
 
-				var target = callout.parentElement && callout.parentElement.tagName === 'SUP' ?
-					callout.parentElement : callout;
 				var call = makeCall(number);
 				var footnote = makeFootnote(number, html);
 				target.before(call, footnote);
