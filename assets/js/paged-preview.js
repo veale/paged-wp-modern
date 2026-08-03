@@ -208,6 +208,31 @@
 		});
 	}
 
+	/**
+	 * Word processors often encode displayed quotations as paragraphs with only
+	 * inline left padding. Balance that padding on the right for print while
+	 * preserving the exact imported value and any explicitly supplied right side.
+	 */
+	function normalizeImportedIndents() {
+		document.querySelectorAll('.pagedwpm-body p[style]').forEach(function (paragraph) {
+			var left = paragraph.style.paddingLeft.trim();
+			var right = paragraph.style.paddingRight.trim();
+
+			if (!left || left === '0' || left === '0px') {
+				return;
+			}
+
+			if (!right || right === '0' || right === '0px') {
+				paragraph.style.setProperty(
+					'padding-right',
+					left,
+					paragraph.style.getPropertyPriority('padding-left')
+				);
+			}
+			paragraph.classList.add('pagedwpm-imported-indent');
+		});
+	}
+
 	function paginationWithTimeout(timeoutMs) {
 		var source = document.querySelector('.pagedwpm-content');
 		var content = source ? source.cloneNode(true) : undefined;
@@ -332,6 +357,7 @@
 		var status = createStatus();
 		try {
 			removeHiddenElements();
+			normalizeImportedIndents();
 			await prepareImages(status);
 			await prepareFonts();
 

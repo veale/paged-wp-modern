@@ -5,7 +5,7 @@ Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ Paged WP Modern turns your WordPress posts and pages into paginated, print-ready
 * Alternating journal/volume and article running heads, omitted on the opening page
 * Centred journal-style folios in a restrained sans serif
 * Excerpt-driven, professionally typeset abstract with an inline customizable label
+* Balanced print treatment for arbitrary imported paragraph left padding from Mammoth/Word
+* Unified sans-serif blue title matter, running furniture, folios, and footnote markers
+* Slightly softened footnote text and publication furniture for visual hierarchy
 * [paged_download] shortcode for front-end "View as PDF" button
 * Clean, professional default typography
 * Enhanced academic microtypography by default, with progressive browser fallbacks
@@ -120,6 +123,16 @@ The current version requires the browser print dialog. Fully automated PDF gener
 Yes — you can configure the CSS selector in Settings to match any footnote HTML pattern. The default selector works with Mammoth and Pandoc output.
 
 == Changelog ==
+
+= 2.2.1 =
+* Fixed existing installations silently omitting abstracts because of a stale pre-abstract visibility option
+* Added a fresh default-visible abstract/subtitle control while retaining an explicit “Always hide” choice
+* Balanced any inline paragraph left-padding value and unit on the right for quotation-like Mammoth/Word passages
+* Suppressed ordinary first-line indentation on imported indented passages
+* Unified title, author, dates, configurable header lines, citations, Abstract label, running heads, folios, and footnote markers in the customizable blue sans-serif publication style
+* Matched footnote call and marker size to the 9pt footnote text and slightly softened the complete footnote area
+* Added Libertinus Sans as the first publication-font choice when the site provides it, with the existing system-sans fallback
+* Added browser and generated-PDF checks for arbitrary-unit quotation padding and coordinated publication furniture
 
 = 2.2.0 =
 * Added a publication-style abstract sourced from the WordPress excerpt by default

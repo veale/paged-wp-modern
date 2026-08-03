@@ -48,21 +48,23 @@ function documentHtml(imagePath) {
 	const css = assets.css
 		.replaceAll('%%PAGEDWPM_ASSET_URL%%', origin + '/')
 		.replaceAll('%%PAGEDWPM_JOURNAL_HEAD%%', '"Current Legal Problems, Vol 79"')
-		.replaceAll('%%PAGEDWPM_ARTICLE_HEAD%%', '"Demanding Inheritance: A Typeset Legal Article"');
-	return `<!doctype html><html lang="en-GB" class="pagedwpm-microtype-enhanced"><head>
+		.replaceAll('%%PAGEDWPM_ARTICLE_HEAD%%', '"Demanding Inheritance: A Typeset Legal Article"')
+		.replaceAll('%%PAGEDWPM_ACCENT%%', '#163c73')
+		.replaceAll('%%PAGEDWPM_LABEL_FONT%%', "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif");
+	return `<!doctype html><html lang="en-GB" class="pagedwpm-microtype-enhanced" style="--pagedwpm-accent: #163c73; --pagedwpm-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;"><head>
 		<style>${css}</style><script>var endNoteCalloutsQuery='a[href*="footnote"], .footnote-ref';</script></head><body>
 		<article class="pagedwpm-content">
 		<header class="pagedwpm-header">
 			<h1>Demanding Inheritance: A Typeset Legal Article</h1>
 			<p class="author">A. N. Author</p>
-			<aside class="abstract pagedwpm-abstract pagedwpm-abstract--plain pagedwpm-abstract-gap--triple"
-				style="--pagedwpm-abstract-accent: #163c73; --pagedwpm-abstract-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;"
-				aria-label="Abstract">
+			<p class="extra-line">Recommended citation: (2026) 79 Current Legal Problems</p>
+			<aside class="abstract pagedwpm-abstract pagedwpm-abstract--plain pagedwpm-abstract-gap--triple" aria-label="Abstract">
 				<p class="abstract-copy"><span class="abstract-heading">Abstract</span><span class="abstract-text">This article examines the legal construction of family and inheritance through public inquiry. It demonstrates a publication-quality abstract with a deliberately restrained measure, justified serif text, and a compact inline label.</span></p>
 			</aside>
 		</header>
 		<div class="pagedwpm-body">
 		${paragraphs('Before', 35)}
+		<p data-test-indent="pixels" style="padding-left: 40px;">An imported quotation whose original left padding should become a balanced print indent without an additional first-line indent.</p>
 		<figure><img src="${imagePath}" alt="Evidence chart"><figcaption>Figure 1. Evidence chart.</figcaption></figure>
 		<p>Text with a note<sup><a class="footnote-ref" href="#footnote%3A1.2">[1]</a></sup>.</p>
 		${paragraphs('After', 55)}
@@ -137,6 +139,22 @@ async function render(route) {
 		footnoteCalls: document.querySelectorAll('.pagedjs_pages .pagedwpm-fn-call').length,
 		fontFamily: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).fontFamily,
 		textIndent: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).textIndent,
+		frontMatter: (() => {
+			const title = document.querySelector('.pagedjs_pages .pagedwpm-header h1');
+			const author = document.querySelector('.pagedjs_pages .pagedwpm-header .author');
+			const extra = document.querySelector('.pagedjs_pages .pagedwpm-header .extra-line');
+			return {
+				titleColor: getComputedStyle(title).color,
+				titleFont: getComputedStyle(title).fontFamily,
+				titleOpacity: getComputedStyle(title).opacity,
+				authorColor: getComputedStyle(author).color,
+				authorFont: getComputedStyle(author).fontFamily,
+				authorOpacity: getComputedStyle(author).opacity,
+				extraColor: getComputedStyle(extra).color,
+				extraFont: getComputedStyle(extra).fontFamily,
+				extraOpacity: getComputedStyle(extra).opacity
+			};
+		})(),
 		abstract: (() => {
 			const block = document.querySelector('.pagedjs_pages .pagedwpm-abstract');
 			const copy = block?.querySelector('.abstract-copy');
@@ -175,6 +193,28 @@ async function render(route) {
 				fontWeight: pseudo.fontWeight
 			};
 		}),
+		importedIndents: Array.from(document.querySelectorAll('.pagedjs_pages .pagedwpm-imported-indent')).map((paragraph) => ({
+			kind: paragraph.dataset.testIndent,
+			paddingLeft: getComputedStyle(paragraph).paddingLeft,
+			paddingRight: getComputedStyle(paragraph).paddingRight,
+			textIndent: getComputedStyle(paragraph).textIndent
+		})),
+		footnoteStyle: (() => {
+			const call = document.querySelector('.pagedjs_pages .pagedwpm-fn-call');
+			const marker = document.querySelector('.pagedjs_pages .pagedwpm-fn-marker');
+			const footnote = marker?.closest('.pagedwpm-footnote');
+			return call && footnote && marker ? {
+				callColor: getComputedStyle(call).color,
+				callFont: getComputedStyle(call).fontFamily,
+				callFontSize: getComputedStyle(call).fontSize,
+				callOpacity: getComputedStyle(call).opacity,
+				footnoteFontSize: getComputedStyle(footnote).fontSize,
+				footnoteOpacity: getComputedStyle(footnote).opacity,
+				markerColor: getComputedStyle(marker).color,
+				markerFont: getComputedStyle(marker).fontFamily,
+				markerFontSize: getComputedStyle(marker).fontSize
+			} : null;
+		})(),
 		sourceHidden: document.querySelector('body > .pagedwpm-content')?.hidden,
 		pages: document.querySelectorAll('.pagedjs_page').length
 	}));
@@ -203,6 +243,15 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.equal(result.printHintDisplay, 'none');
 	assert.match(result.fontFamily, /PagedWPM Source Serif/);
 	assert.notEqual(result.textIndent, '0px');
+	assert.equal(result.frontMatter.titleColor, 'rgb(22, 60, 115)');
+	assert.equal(result.frontMatter.authorColor, 'rgb(22, 60, 115)');
+	assert.equal(result.frontMatter.extraColor, 'rgb(22, 60, 115)');
+	assert.match(result.frontMatter.titleFont, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.match(result.frontMatter.authorFont, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.match(result.frontMatter.extraFont, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.ok(Number.parseFloat(result.frontMatter.titleOpacity) < 1);
+	assert.ok(Number.parseFloat(result.frontMatter.authorOpacity) < 1);
+	assert.ok(Number.parseFloat(result.frontMatter.extraOpacity) < 1);
 	assert.ok(result.abstract);
 	assert.equal(result.abstract.inlineLabel, 'inline');
 	assert.equal(result.abstract.inlineText, 'inline');
@@ -225,6 +274,22 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.ok(result.folios.every((folio) => folio?.content === 'counter(page)'));
 	assert.match(result.folios[0].fontFamily, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
 	assert.ok(Number.parseInt(result.folios[0].fontWeight, 10) >= 600);
+	assert.deepEqual(result.importedIndents[0], {
+		kind: 'pixels',
+		paddingLeft: '40px',
+		paddingRight: '40px',
+		textIndent: '0px'
+	});
+	assert.equal(result.importedIndents.length, 1);
+	assert.ok(result.footnoteStyle);
+	assert.equal(result.footnoteStyle.callColor, 'rgb(22, 60, 115)');
+	assert.equal(result.footnoteStyle.markerColor, 'rgb(22, 60, 115)');
+	assert.match(result.footnoteStyle.callFont, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.match(result.footnoteStyle.markerFont, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.equal(result.footnoteStyle.callFontSize, result.footnoteStyle.footnoteFontSize);
+	assert.equal(result.footnoteStyle.markerFontSize, result.footnoteStyle.footnoteFontSize);
+	assert.ok(Number.parseFloat(result.footnoteStyle.callOpacity) < 1);
+	assert.ok(Number.parseFloat(result.footnoteStyle.footnoteOpacity) < 1);
 	assert.ok(result.pages > 1);
 });
 

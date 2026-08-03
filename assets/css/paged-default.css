@@ -53,8 +53,8 @@
 
 	@bottom-center {
 		content: counter(page);
-		color: #163c73;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		color: %%PAGEDWPM_ACCENT%%;
+		font-family: %%PAGEDWPM_LABEL_FONT%%;
 		font-size: 8pt;
 		font-variant-numeric: tabular-nums;
 		font-weight: 650;
@@ -83,8 +83,8 @@
 
 	@top-center {
 		content: %%PAGEDWPM_JOURNAL_HEAD%%;
-		color: #163c73;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		color: %%PAGEDWPM_ACCENT%%;
+		font-family: %%PAGEDWPM_LABEL_FONT%%;
 		font-size: 7.5pt;
 		font-style: normal;
 		font-weight: 600;
@@ -100,8 +100,8 @@
 
 	@top-center {
 		content: %%PAGEDWPM_ARTICLE_HEAD%%;
-		color: #163c73;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		color: %%PAGEDWPM_ACCENT%%;
+		font-family: %%PAGEDWPM_LABEL_FONT%%;
 		font-size: 7.5pt;
 		font-style: normal;
 		font-weight: 600;
@@ -129,6 +129,11 @@ body {
 	text-rendering: optimizeLegibility;
 	-webkit-print-color-adjust: exact;
 	print-color-adjust: exact;
+}
+
+:root {
+	--pagedwpm-accent: #163c73;
+	--pagedwpm-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Progressive microtypography. Unsupported declarations fall back cleanly. */
@@ -168,53 +173,74 @@ body {
 }
 
 .pagedwpm-header h1 {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 22pt;
 	line-height: 1.2;
 	margin-bottom: 0.3em;
 	font-weight: 700;
-	color: #000;
+	color: var(--pagedwpm-accent);
+	letter-spacing: -0.012em;
+	opacity: 0.92;
 }
 
 .pagedwpm-header .author {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 12pt;
-	color: #333;
+	color: var(--pagedwpm-accent);
+	font-weight: 550;
 	margin: 0 0 0.2em 0;
+	opacity: 0.9;
 }
 
 .pagedwpm-header .date {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 10pt;
-	color: #666;
+	color: var(--pagedwpm-accent);
 	margin: 0 0 0.2em 0;
+	opacity: 0.8;
 }
 
 .pagedwpm-header .extra-line {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 10pt;
-	color: #555;
+	color: var(--pagedwpm-accent);
 	margin: 0 0 0.2em 0;
+	opacity: 0.8;
+}
+
+.pagedwpm-header .citation,
+.pagedwpm-header .recommended-citation {
+	color: var(--pagedwpm-accent);
+	font-family: var(--pagedwpm-label-font);
+	opacity: 0.8;
 }
 
 
 /* -- Subtitle styles -- */
 
 .pagedwpm-header .subtitle {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 14pt;
 	font-style: italic;
-	color: #444;
+	color: var(--pagedwpm-accent);
 	margin: 0.3em 0 0.8em 0;
+	opacity: 0.88;
 }
 
 .pagedwpm-header .subtitle-plain {
+	font-family: var(--pagedwpm-label-font);
 	font-size: 11pt;
-	color: #333;
+	color: var(--pagedwpm-accent);
 	margin: 0.3em 0 0.8em 0;
+	opacity: 0.88;
 }
 
 
 /* -- Journal abstract -- */
 
 .pagedwpm-header .pagedwpm-abstract {
-	--pagedwpm-abstract-accent: #163c73;
-	--pagedwpm-abstract-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+	--pagedwpm-abstract-accent: var(--pagedwpm-accent);
+	--pagedwpm-abstract-label-font: var(--pagedwpm-label-font);
 	box-sizing: border-box;
 	max-width: 138mm;
 	margin: 14pt auto 4pt;
@@ -332,6 +358,17 @@ p {
 .pagedwpm-microtype-enhanced .pagedwpm-body p {
 	margin-bottom: 0;
 	text-indent: 1.25em;
+}
+
+/* Imported Word/HTML quotation paragraphs are balanced in JavaScript using
+   their exact inline left-padding value; suppress the ordinary first-line indent. */
+.pagedwpm-microtype-enhanced .pagedwpm-body p.pagedwpm-imported-indent {
+	box-sizing: border-box;
+	margin-top: 0.55em;
+	margin-bottom: 0.55em;
+	text-indent: 0;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 }
 
 .pagedwpm-microtype-enhanced .pagedwpm-body h1 + p,
@@ -582,6 +619,7 @@ code, pre, samp, kbd {
 	font-size: 9pt;
 	line-height: 1.4;
 	color: #333;
+	opacity: 0.86;
 	text-align: left;
 	-webkit-hyphens: auto;
 	hyphens: auto;
@@ -602,17 +640,23 @@ code, pre, samp, kbd {
 
 /* Inline superscript call number in body text (real DOM element) */
 .pagedwpm-fn-call {
-	font-size: 7.5pt;
+	font-family: var(--pagedwpm-label-font);
+	font-size: 9pt;
+	font-style: normal;
+	font-weight: 650;
 	vertical-align: super;
 	line-height: 0;
-	color: #1a1a1a;
+	color: var(--pagedwpm-accent);
+	opacity: 0.86;
 }
 
 /* Marker number at the start of footnote text at page bottom */
 .pagedwpm-fn-marker {
-	font-size: 9pt;
-	font-weight: normal;
-	color: #1a1a1a;
+	font-family: var(--pagedwpm-label-font);
+	font-size: inherit;
+	font-style: normal;
+	font-weight: 650;
+	color: var(--pagedwpm-accent);
 }
 
 

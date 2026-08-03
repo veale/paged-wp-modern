@@ -86,7 +86,7 @@ class Preview {
 		$label = trim( (string) get_option( 'pagedwpm_abstract_label', __( 'Abstract', 'paged-wp-modern' ) ) );
 		$font  = (string) get_option(
 			'pagedwpm_abstract_label_font',
-			"-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+			"'LibertinusSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
 		);
 		$font  = preg_replace( '/[^a-zA-Z0-9\s,\'"-]/', '', $font );
 		$font  = substr( trim( $font ), 0, 200 );
@@ -96,7 +96,7 @@ class Preview {
 			'label' => $label ?: __( 'Abstract', 'paged-wp-modern' ),
 			'style' => in_array( $style, [ 'rule', 'panel', 'plain' ], true ) ? $style : 'plain',
 			'gap'   => in_array( $gap, [ 'double', 'triple' ], true ) ? $gap : 'triple',
-			'font'  => $font ?: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+			'font'  => $font ?: "'LibertinusSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
 			'color' => $color ?: '#163c73',
 		];
 	}

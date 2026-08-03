@@ -3,7 +3,7 @@
  * Plugin Name: Paged WP Modern
  * Plugin URI:  https://github.com/veale/paged-wp-modern
  * Description: Generate beautiful paginated PDFs from WordPress posts and pages using Paged.js, with proper footnote support for Mammoth-imported Word documents.
- * Version:     2.2.0
+ * Version:     2.2.1
  * Author:      Michael Veale
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PAGEDWPM_VERSION', '2.2.0' );
+define( 'PAGEDWPM_VERSION', '2.2.1' );
 define( 'PAGEDWPM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PAGEDWPM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Pin to a known good version of Paged.js with footnote support

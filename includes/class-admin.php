@@ -60,13 +60,22 @@ class Admin {
 		);
 
 		// -- Subtitle / abstract --
-		register_setting( 'pagedwpm-settings', 'pagedwpm_show_subtitle', [
-			'type' => 'string', 'default' => '1',
-			'sanitize_callback' => 'sanitize_text_field',
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_visibility', [
+			'type'              => 'string',
+			'default'           => 'show',
+			'sanitize_callback' => [ $this, 'sanitize_abstract_visibility' ],
 		] );
-		add_settings_field( 'pagedwpm_show_subtitle', __( 'Show subtitle / abstract', 'paged-wp-modern' ),
-			[ $this, 'render_checkbox' ], 'pagedwpm-settings', 'pagedwpm_title_block',
-			[ 'option' => 'pagedwpm_show_subtitle', 'label' => 'Display a subtitle or abstract block below the title' ]
+		add_settings_field( 'pagedwpm_abstract_visibility', __( 'Abstract / subtitle visibility', 'paged-wp-modern' ),
+			[ $this, 'render_select' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_abstract_visibility',
+				'default'     => 'show',
+				'options'     => [
+					'show' => __( 'Show when text is available (default)', 'paged-wp-modern' ),
+					'hide' => __( 'Always hide', 'paged-wp-modern' ),
+				],
+				'description' => __( 'Uses the WordPress excerpt by default. This fresh visibility control avoids stale settings from older plugin versions suppressing new abstracts.', 'paged-wp-modern' ),
+			]
 		);
 
 		register_setting( 'pagedwpm-settings', 'pagedwpm_subtitle_template', [
@@ -155,27 +164,27 @@ class Admin {
 			'default'           => '#163c73',
 			'sanitize_callback' => 'sanitize_hex_color',
 		] );
-		add_settings_field( 'pagedwpm_abstract_accent_color', __( 'Abstract accent colour', 'paged-wp-modern' ),
+		add_settings_field( 'pagedwpm_abstract_accent_color', __( 'Publication accent colour', 'paged-wp-modern' ),
 			[ $this, 'render_color_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
 			[
 				'option'      => 'pagedwpm_abstract_accent_color',
 				'default'     => '#163c73',
-				'description' => __( 'Colours the abstract copy, label, and optional rule; the default echoes the CLP site palette.', 'paged-wp-modern' ),
+				'description' => __( 'Colours the title matter, abstract, running heads, folios, and footnote markers; the default echoes the CLP site palette.', 'paged-wp-modern' ),
 			]
 		);
 
 		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_label_font', [
 			'type'              => 'string',
-			'default'           => "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+			'default'           => "'LibertinusSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
 			'sanitize_callback' => [ $this, 'sanitize_font_stack' ],
 		] );
-		add_settings_field( 'pagedwpm_abstract_label_font', __( 'Abstract label font', 'paged-wp-modern' ),
+		add_settings_field( 'pagedwpm_abstract_label_font', __( 'Publication label font', 'paged-wp-modern' ),
 			[ $this, 'render_text_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
 			[
 				'option'      => 'pagedwpm_abstract_label_font',
-				'default'     => "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
-				'placeholder' => "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-				'description' => __( 'CSS font-family stack for the inline label. The abstract copy remains in the publication serif.', 'paged-wp-modern' ),
+				'default'     => "'LibertinusSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+				'placeholder' => "'LibertinusSans', -apple-system, 'Segoe UI', sans-serif",
+				'description' => __( 'CSS font-family stack for title matter, labels, running heads, folios, and footnote markers. Article and abstract prose remain in the publication serif.', 'paged-wp-modern' ),
 				'wide'        => true,
 			]
 		);
@@ -475,6 +484,10 @@ class Admin {
 
 	public function sanitize_abstract_style( $input ) {
 		return in_array( $input, [ 'rule', 'panel', 'plain' ], true ) ? $input : 'plain';
+	}
+
+	public function sanitize_abstract_visibility( $input ) {
+		return in_array( $input, [ 'show', 'hide' ], true ) ? $input : 'show';
 	}
 
 	public function sanitize_abstract_gap( $input ) {

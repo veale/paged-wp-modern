@@ -9,6 +9,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 $pagedwpm_options = [
 	'pagedwpm_show_subtitle',
+	'pagedwpm_abstract_visibility',
 	'pagedwpm_subtitle_template',
 	'pagedwpm_subtitle_style',
 	'pagedwpm_abstract_label',

@@ -39,7 +39,7 @@ if ( $show_date ) {
 	$date_text  = \PagedWPM\Preview::resolve_template( $date_tpl, $post_id );
 }
 
-$show_subtitle  = get_option( 'pagedwpm_show_subtitle', '1' ) === '1';
+$show_subtitle  = get_option( 'pagedwpm_abstract_visibility', 'show' ) !== 'hide';
 $subtitle_text  = '';
 $subtitle_style = get_option( 'pagedwpm_subtitle_style', 'abstract' );
 if ( $show_subtitle ) {
@@ -70,8 +70,13 @@ $article_head_tpl   = get_option( 'pagedwpm_article_head_template', '{title}' );
 $journal_head       = $show_running_heads ? \PagedWPM\Preview::resolve_template( $journal_head_tpl, $post_id ) : '';
 $article_head       = $show_running_heads ? \PagedWPM\Preview::resolve_template( $article_head_tpl, $post_id ) : '';
 $paged_css          = str_replace(
-	[ '%%PAGEDWPM_JOURNAL_HEAD%%', '%%PAGEDWPM_ARTICLE_HEAD%%' ],
-	[ \PagedWPM\Preview::quote_css_string( $journal_head ), \PagedWPM\Preview::quote_css_string( $article_head ) ],
+	[ '%%PAGEDWPM_JOURNAL_HEAD%%', '%%PAGEDWPM_ARTICLE_HEAD%%', '%%PAGEDWPM_ACCENT%%', '%%PAGEDWPM_LABEL_FONT%%' ],
+	[
+		\PagedWPM\Preview::quote_css_string( $journal_head ),
+		\PagedWPM\Preview::quote_css_string( $article_head ),
+		$abstract_style['color'],
+		$abstract_style['font'],
+	],
 	$paged_css
 );
 $asset_version  = rawurlencode( PAGEDWPM_VERSION );
@@ -98,7 +103,7 @@ $preview_config = [
 ];
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>" class="pagedwpm-microtype-<?php echo esc_attr( $microtype_mode ); ?>">
+<html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>" class="pagedwpm-microtype-<?php echo esc_attr( $microtype_mode ); ?>" style="--pagedwpm-accent: <?php echo esc_attr( $abstract_style['color'] ); ?>; --pagedwpm-label-font: <?php echo esc_attr( $abstract_style['font'] ); ?>;">
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -140,7 +145,6 @@ $preview_config = [
 				<?php if ( $subtitle_style === 'abstract' ) : ?>
 					<aside
 						class="abstract pagedwpm-abstract pagedwpm-abstract--<?php echo esc_attr( $abstract_style['style'] ); ?> pagedwpm-abstract-gap--<?php echo esc_attr( $abstract_style['gap'] ); ?>"
-						style="--pagedwpm-abstract-accent: <?php echo esc_attr( $abstract_style['color'] ); ?>; --pagedwpm-abstract-label-font: <?php echo esc_attr( $abstract_style['font'] ); ?>;"
 						aria-label="<?php echo esc_attr( $abstract_style['label'] ); ?>"
 					>
 						<p class="abstract-copy"><span class="abstract-heading"><?php echo esc_html( $abstract_style['label'] ); ?></span><span class="abstract-text"><?php echo esc_html( $subtitle_text ); ?></span></p>
