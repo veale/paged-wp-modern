@@ -45,10 +45,23 @@ function documentHtml(imagePath) {
 		paginationTimeoutMs: 15000,
 		messages: {}
 	});
-	const css = assets.css.replaceAll('%%PAGEDWPM_ASSET_URL%%', origin + '/');
+	const css = assets.css
+		.replaceAll('%%PAGEDWPM_ASSET_URL%%', origin + '/')
+		.replaceAll('%%PAGEDWPM_JOURNAL_HEAD%%', '"Current Legal Problems, Vol 79"')
+		.replaceAll('%%PAGEDWPM_ARTICLE_HEAD%%', '"Demanding Inheritance: A Typeset Legal Article"');
 	return `<!doctype html><html lang="en-GB" class="pagedwpm-microtype-enhanced"><head>
 		<style>${css}</style><script>var endNoteCalloutsQuery='a[href*="footnote"], .footnote-ref';</script></head><body>
-		<article class="pagedwpm-content"><div class="pagedwpm-body">
+		<article class="pagedwpm-content">
+		<header class="pagedwpm-header">
+			<h1>Demanding Inheritance: A Typeset Legal Article</h1>
+			<p class="author">A. N. Author</p>
+			<aside class="abstract pagedwpm-abstract pagedwpm-abstract--plain pagedwpm-abstract-gap--triple"
+				style="--pagedwpm-abstract-accent: #163c73; --pagedwpm-abstract-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;"
+				aria-label="Abstract">
+				<p class="abstract-copy"><span class="abstract-heading">Abstract</span><span class="abstract-text">This article examines the legal construction of family and inheritance through public inquiry. It demonstrates a publication-quality abstract with a deliberately restrained measure, justified serif text, and a compact inline label.</span></p>
+			</aside>
+		</header>
+		<div class="pagedwpm-body">
 		${paragraphs('Before', 35)}
 		<figure><img src="${imagePath}" alt="Evidence chart"><figcaption>Figure 1. Evidence chart.</figcaption></figure>
 		<p>Text with a note<sup><a class="footnote-ref" href="#footnote%3A1.2">[1]</a></sup>.</p>
@@ -122,8 +135,46 @@ async function render(route) {
 		error: document.querySelector('#pagedwpm-status[data-state="error"]')?.textContent || '',
 		failedImages: document.querySelectorAll('.pagedjs_pages .pagedwpm-image-error').length,
 		footnoteCalls: document.querySelectorAll('.pagedjs_pages .pagedwpm-fn-call').length,
-		fontFamily: getComputedStyle(document.querySelector('.pagedjs_pages p')).fontFamily,
-		textIndent: getComputedStyle(document.querySelector('.pagedjs_pages p')).textIndent,
+		fontFamily: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).fontFamily,
+		textIndent: getComputedStyle(document.querySelector('.pagedjs_pages .pagedwpm-body > p')).textIndent,
+		abstract: (() => {
+			const block = document.querySelector('.pagedjs_pages .pagedwpm-abstract');
+			const copy = block?.querySelector('.abstract-copy');
+			const label = block?.querySelector('.abstract-heading');
+			const text = block?.querySelector('.abstract-text');
+			return block && copy && label && text ? {
+				accent: getComputedStyle(label).color,
+				borderLeftWidth: getComputedStyle(block).borderLeftWidth,
+				copyTextAlign: getComputedStyle(copy).textAlign,
+				copyTextIndent: getComputedStyle(copy).textIndent,
+				fontFamily: getComputedStyle(label).fontFamily,
+				fontWeight: getComputedStyle(label).fontWeight,
+				gap: getComputedStyle(label).marginInlineEnd,
+				inlineLabel: getComputedStyle(label).display,
+				inlineText: getComputedStyle(text).display,
+				maxWidth: getComputedStyle(block).maxWidth,
+				opacity: getComputedStyle(block).opacity,
+				oneParagraph: label.parentElement === text.parentElement && label.parentElement === copy
+			} : null;
+		})(),
+		runningHeads: Array.from(document.querySelectorAll('.pagedjs_page')).slice(0, 3).map((pagedPage) => {
+			const head = pagedPage.querySelector('.pagedjs_margin-top-center .pagedjs_margin-content');
+			const generated = head ? getComputedStyle(head, '::after').content : 'none';
+			if (generated === 'none' || generated === 'normal') return '';
+			try { return JSON.parse(generated); } catch { return generated.replace(/^['"]|['"]$/g, ''); }
+		}),
+		folios: Array.from(document.querySelectorAll('.pagedjs_page')).slice(0, 3).map((pagedPage) => {
+			const folio = pagedPage.querySelector('.pagedjs_margin-bottom-center .pagedjs_margin-content');
+			if (!folio) return null;
+			const pseudo = getComputedStyle(folio, '::after');
+			const generated = pseudo.content;
+			return {
+				text: pagedPage.dataset.pageNumber || '',
+				content: generated,
+				fontFamily: pseudo.fontFamily,
+				fontWeight: pseudo.fontWeight
+			};
+		}),
 		sourceHidden: document.querySelector('body > .pagedwpm-content')?.hidden,
 		pages: document.querySelectorAll('.pagedjs_page').length
 	}));
@@ -133,6 +184,9 @@ async function render(route) {
 	await page.emulateMediaType('screen');
 	if (process.env.PAGEDWPM_SCREENSHOT && route === '/normal') {
 		await page.screenshot({ path: process.env.PAGEDWPM_SCREENSHOT, fullPage: true });
+	}
+	if (process.env.PAGEDWPM_PDF && route === '/normal') {
+		await page.pdf({ path: process.env.PAGEDWPM_PDF, printBackground: true, preferCSSPageSize: true });
 	}
 	await page.close();
 	return result;
@@ -149,6 +203,28 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.equal(result.printHintDisplay, 'none');
 	assert.match(result.fontFamily, /PagedWPM Source Serif/);
 	assert.notEqual(result.textIndent, '0px');
+	assert.ok(result.abstract);
+	assert.equal(result.abstract.inlineLabel, 'inline');
+	assert.equal(result.abstract.inlineText, 'inline');
+	assert.equal(result.abstract.oneParagraph, true);
+	assert.equal(result.abstract.copyTextAlign, 'justify');
+	assert.equal(result.abstract.copyTextIndent, '0px');
+	assert.match(result.abstract.fontFamily, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.equal(result.abstract.fontWeight, '700');
+	assert.ok(Number.parseFloat(result.abstract.gap) > 8);
+	assert.equal(result.abstract.borderLeftWidth, '0px');
+	assert.notEqual(result.abstract.accent, 'rgb(0, 0, 0)');
+	assert.ok(Number.parseFloat(result.abstract.maxWidth) > 400);
+	assert.ok(Number.parseFloat(result.abstract.opacity) < 1);
+	assert.deepEqual(result.runningHeads, [
+		'',
+		'Current Legal Problems, Vol 79',
+		'Demanding Inheritance: A Typeset Legal Article'
+	]);
+	assert.deepEqual(result.folios.map((folio) => folio?.text), ['1', '2', '3']);
+	assert.ok(result.folios.every((folio) => folio?.content === 'counter(page)'));
+	assert.match(result.folios[0].fontFamily, /-apple-system|BlinkMacSystemFont|Segoe UI|Arial/);
+	assert.ok(Number.parseInt(result.folios[0].fontWeight, 10) >= 600);
 	assert.ok(result.pages > 1);
 });
 

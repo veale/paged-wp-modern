@@ -78,6 +78,43 @@ class Preview {
 	}
 
 	/**
+	 * Get the abstract presentation settings with safe fallbacks.
+	 */
+	public static function get_abstract_settings() {
+		$style = get_option( 'pagedwpm_abstract_style', 'plain' );
+		$gap   = get_option( 'pagedwpm_abstract_label_gap', 'triple' );
+		$label = trim( (string) get_option( 'pagedwpm_abstract_label', __( 'Abstract', 'paged-wp-modern' ) ) );
+		$font  = (string) get_option(
+			'pagedwpm_abstract_label_font',
+			"-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+		);
+		$font  = preg_replace( '/[^a-zA-Z0-9\s,\'"-]/', '', $font );
+		$font  = substr( trim( $font ), 0, 200 );
+		$color = sanitize_hex_color( get_option( 'pagedwpm_abstract_accent_color', '#163c73' ) );
+
+		return [
+			'label' => $label ?: __( 'Abstract', 'paged-wp-modern' ),
+			'style' => in_array( $style, [ 'rule', 'panel', 'plain' ], true ) ? $style : 'plain',
+			'gap'   => in_array( $gap, [ 'double', 'triple' ], true ) ? $gap : 'triple',
+			'font'  => $font ?: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+			'color' => $color ?: '#163c73',
+		];
+	}
+
+	/**
+	 * Quote plain text for use as a CSS string value.
+	 */
+	public static function quote_css_string( $value ) {
+		$value = wp_strip_all_tags( (string) $value );
+		$value = str_replace(
+			[ '\\', '"', "\r\n", "\r", "\n", "\f", '<' ],
+			[ '\\\\', '\\"', '\\A ', '\\A ', '\\A ', '\\C ', '\\3C ' ],
+			$value
+		);
+		return '"' . $value . '"';
+	}
+
+	/**
 	 * Get a seconds-based timeout option as milliseconds with safe limits.
 	 */
 	public static function get_timeout_ms( $option, $default ) {
@@ -170,6 +207,9 @@ class Preview {
 	 *   {modified_date}  — last modified date (formatted)
 	 *   {excerpt}        — post excerpt (the abstract)
 	 *   {title}          — post title
+	 *   {site_title}     — WordPress site title
+	 *   {volume}         — citation_volume post meta
+	 *   {volume_suffix}  — optional ", Vol XX" suffix
 	 *   {acf:field_name} — ACF field value
 	 *   {meta:key}       — post meta value
 	 *
@@ -191,6 +231,7 @@ class Preview {
 			return '';
 		}
 		$date_format = self::get_date_format();
+		$volume      = self::stringify_template_value( get_post_meta( $post_id, 'citation_volume', true ) );
 
 		// Simple replacements
 		$replacements = [
@@ -199,6 +240,9 @@ class Preview {
 			'{modified_date}' => get_the_modified_date( $date_format, $post_id ),
 			'{excerpt}'       => self::get_clean_excerpt( $post_id ),
 			'{title}'         => get_the_title( $post_id ),
+			'{site_title}'    => get_bloginfo( 'name' ),
+			'{volume}'        => $volume,
+			'{volume_suffix}' => '' !== $volume ? sprintf( __( ', Vol %s', 'paged-wp-modern' ), $volume ) : '',
 		];
 
 		$result = str_replace(

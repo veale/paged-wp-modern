@@ -48,7 +48,10 @@ class Admin {
 				echo '<code>{date}</code> publication date &nbsp; ';
 				echo '<code>{modified_date}</code> last modified date &nbsp; ';
 				echo '<code>{excerpt}</code> post excerpt / abstract &nbsp; ';
-				echo '<code>{title}</code> post title<br>';
+				echo '<code>{title}</code> post title &nbsp; ';
+				echo '<code>{site_title}</code> WordPress site title<br>';
+				echo '<code>{volume}</code> citation volume &nbsp; ';
+				echo '<code>{volume_suffix}</code> optional ", Vol XX" suffix &nbsp; ';
 				echo '<code>{acf:field_name}</code> any ACF field (replace <em>field_name</em> with the field name) &nbsp; ';
 				echo '<code>{meta:key}</code> any post meta field';
 				echo '</div>';
@@ -90,9 +93,90 @@ class Admin {
 				'option'  => 'pagedwpm_subtitle_style',
 				'options' => [
 					'subtitle' => 'Subtitle (italic, larger text)',
-					'abstract' => 'Abstract (indented block with "Abstract" heading)',
+					'abstract' => 'Abstract (inline label and journal treatment)',
 					'plain'    => 'Plain paragraph',
 				],
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_label', [
+			'type'              => 'string',
+			'default'           => __( 'Abstract', 'paged-wp-modern' ),
+			'sanitize_callback' => 'sanitize_text_field',
+		] );
+		add_settings_field( 'pagedwpm_abstract_label', __( 'Abstract label', 'paged-wp-modern' ),
+			[ $this, 'render_text_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_abstract_label',
+				'default'     => __( 'Abstract', 'paged-wp-modern' ),
+				'placeholder' => __( 'Abstract', 'paged-wp-modern' ),
+				'description' => __( 'The bold inline label. Change this for another language or journal convention.', 'paged-wp-modern' ),
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_style', [
+			'type'              => 'string',
+			'default'           => 'plain',
+			'sanitize_callback' => [ $this, 'sanitize_abstract_style' ],
+		] );
+		add_settings_field( 'pagedwpm_abstract_style', __( 'Abstract treatment', 'paged-wp-modern' ),
+			[ $this, 'render_select' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_abstract_style',
+				'default'     => 'plain',
+				'options'     => [
+					'plain' => __( 'Unruled journal abstract (default)', 'paged-wp-modern' ),
+					'rule'  => __( 'Fine left rule', 'paged-wp-modern' ),
+					'panel' => __( 'Subtle tinted panel', 'paged-wp-modern' ),
+				],
+				'description' => __( 'Used when the subtitle display style is Abstract.', 'paged-wp-modern' ),
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_label_gap', [
+			'type'              => 'string',
+			'default'           => 'triple',
+			'sanitize_callback' => [ $this, 'sanitize_abstract_gap' ],
+		] );
+		add_settings_field( 'pagedwpm_abstract_label_gap', __( 'Space after label', 'paged-wp-modern' ),
+			[ $this, 'render_select' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'  => 'pagedwpm_abstract_label_gap',
+				'default' => 'triple',
+				'options' => [
+					'double' => __( 'Double-space equivalent', 'paged-wp-modern' ),
+					'triple' => __( 'Triple-space equivalent (default)', 'paged-wp-modern' ),
+				],
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_accent_color', [
+			'type'              => 'string',
+			'default'           => '#163c73',
+			'sanitize_callback' => 'sanitize_hex_color',
+		] );
+		add_settings_field( 'pagedwpm_abstract_accent_color', __( 'Abstract accent colour', 'paged-wp-modern' ),
+			[ $this, 'render_color_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_abstract_accent_color',
+				'default'     => '#163c73',
+				'description' => __( 'Colours the abstract copy, label, and optional rule; the default echoes the CLP site palette.', 'paged-wp-modern' ),
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_abstract_label_font', [
+			'type'              => 'string',
+			'default'           => "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+			'sanitize_callback' => [ $this, 'sanitize_font_stack' ],
+		] );
+		add_settings_field( 'pagedwpm_abstract_label_font', __( 'Abstract label font', 'paged-wp-modern' ),
+			[ $this, 'render_text_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_abstract_label_font',
+				'default'     => "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+				'placeholder' => "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+				'description' => __( 'CSS font-family stack for the inline label. The abstract copy remains in the publication serif.', 'paged-wp-modern' ),
+				'wide'        => true,
 			]
 		);
 
@@ -169,6 +253,49 @@ class Admin {
 				'rows'        => 3,
 				'placeholder' => "{acf:journal_name}, Vol. {acf:volume}\nDOI: {acf:doi}",
 				'description' => 'Extra lines in the title block, one per line. Each can use template tags. Leave blank for none.',
+			]
+		);
+
+		// -- Running heads and folios --
+		register_setting( 'pagedwpm-settings', 'pagedwpm_show_running_heads', [
+			'type'              => 'string',
+			'default'           => '1',
+			'sanitize_callback' => 'sanitize_text_field',
+		] );
+		add_settings_field( 'pagedwpm_show_running_heads', __( 'Running heads', 'paged-wp-modern' ),
+			[ $this, 'render_checkbox' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[ 'option' => 'pagedwpm_show_running_heads', 'label' => __( 'Alternate journal and article running heads after the first page', 'paged-wp-modern' ) ]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_journal_head_template', [
+			'type'              => 'string',
+			'default'           => '{site_title}{volume_suffix}',
+			'sanitize_callback' => 'sanitize_text_field',
+		] );
+		add_settings_field( 'pagedwpm_journal_head_template', __( 'Journal running head', 'paged-wp-modern' ),
+			[ $this, 'render_text_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_journal_head_template',
+				'default'     => '{site_title}{volume_suffix}',
+				'placeholder' => '{site_title}{volume_suffix}',
+				'description' => __( 'Appears on even (left) pages. The default becomes “Current Legal Problems, Vol XX” when citation_volume is present.', 'paged-wp-modern' ),
+				'wide'        => true,
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_article_head_template', [
+			'type'              => 'string',
+			'default'           => '{title}',
+			'sanitize_callback' => 'sanitize_text_field',
+		] );
+		add_settings_field( 'pagedwpm_article_head_template', __( 'Article running head', 'paged-wp-modern' ),
+			[ $this, 'render_text_field' ], 'pagedwpm-settings', 'pagedwpm_title_block',
+			[
+				'option'      => 'pagedwpm_article_head_template',
+				'default'     => '{title}',
+				'placeholder' => '{title}',
+				'description' => __( 'Appears on odd (right) pages after page one. A short-title custom field can be used for long titles.', 'paged-wp-modern' ),
+				'wide'        => true,
 			]
 		);
 
@@ -346,6 +473,19 @@ class Admin {
 		return in_array( $input, [ 'enhanced', 'standard' ], true ) ? $input : 'enhanced';
 	}
 
+	public function sanitize_abstract_style( $input ) {
+		return in_array( $input, [ 'rule', 'panel', 'plain' ], true ) ? $input : 'plain';
+	}
+
+	public function sanitize_abstract_gap( $input ) {
+		return in_array( $input, [ 'double', 'triple' ], true ) ? $input : 'triple';
+	}
+
+	public function sanitize_font_stack( $input ) {
+		$input = preg_replace( '/[^a-zA-Z0-9\s,\'"-]/', '', (string) $input );
+		return substr( trim( $input ), 0, 200 );
+	}
+
 	public function sanitize_timeout( $input ) {
 		return max( 1, min( 300, absint( $input ) ) );
 	}
@@ -389,7 +529,7 @@ class Admin {
 	}
 
 	public function render_text_field( $args ) {
-		$value = get_option( $args['option'], '' );
+		$value = get_option( $args['option'], $args['default'] ?? '' );
 		$wide  = ! empty( $args['wide'] );
 		?>
 		<input type="text" name="<?php echo esc_attr( $args['option'] ); ?>"
@@ -418,13 +558,30 @@ class Admin {
 	}
 
 	public function render_select( $args ) {
-		$value = get_option( $args['option'], '' );
+		$value = get_option( $args['option'], $args['default'] ?? '' );
 		?>
 		<select name="<?php echo esc_attr( $args['option'] ); ?>">
 			<?php foreach ( $args['options'] as $key => $label ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $value, $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
+		<?php if ( ! empty( $args['description'] ) ) : ?>
+			<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	public function render_color_field( $args ) {
+		$value = sanitize_hex_color( get_option( $args['option'], $args['default'] ?? '#000000' ) );
+		$value = $value ?: ( $args['default'] ?? '#000000' );
+		?>
+		<input type="color"
+			name="<?php echo esc_attr( $args['option'] ); ?>"
+			value="<?php echo esc_attr( $value ); ?>">
+		<code><?php echo esc_html( $value ); ?></code>
+		<?php if ( ! empty( $args['description'] ) ) : ?>
+			<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 

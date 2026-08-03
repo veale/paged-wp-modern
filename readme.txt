@@ -5,7 +5,7 @@ Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,9 @@ Paged WP Modern turns your WordPress posts and pages into paginated, print-ready
 * Works with both Gutenberg and Classic Editor
 * Customizable page CSS (page size, margins, fonts, etc.)
 * Running headers and page numbers
+* Alternating journal/volume and article running heads, omitted on the opening page
+* Centred journal-style folios in a restrained sans serif
+* Excerpt-driven, professionally typeset abstract with an inline customizable label
 * [paged_download] shortcode for front-end "View as PDF" button
 * Clean, professional default typography
 * Enhanced academic microtypography by default, with progressive browser fallbacks
@@ -58,6 +61,8 @@ Paged WP Modern turns your WordPress posts and pages into paginated, print-ready
 Go to Settings → Paged WP Modern to:
 
 * Toggle author name and date display
+* Customize the abstract label, blue accent, label font, spacing, and treatment
+* Customize alternating journal/volume and article running heads
 * Customize the CSS selector used to detect footnote callouts (default works with Mammoth and Pandoc)
 * Add custom Paged Media CSS (change page size, margins, fonts, etc.)
 * Choose enhanced or standard browser typography
@@ -115,6 +120,16 @@ The current version requires the browser print dialog. Fully automated PDF gener
 Yes — you can configure the CSS selector in Settings to match any footnote HTML pattern. The default selector works with Mammoth and Pandoc output.
 
 == Changelog ==
+
+= 2.2.0 =
+* Added a publication-style abstract sourced from the WordPress excerpt by default
+* Set the abstract in a narrower justified measure, smaller serif type, and softened CLP blue
+* Added an inline bold sans-serif abstract label with configurable double/triple spacing
+* Added abstract label, colour, font, and unruled/rule/panel presentation settings
+* Added alternating journal/volume and article-title running heads after the opening page
+* Added automatic site-title and citation-volume template tags for journal running matter
+* Centred and restyled folios consistently on every page
+* Added browser and generated-PDF regression coverage for abstracts, running heads, folios, and print-only UI exclusion
 
 = 2.1.2 =
 * Kept the useful print toolbar visible on screen but completely absent from printed PDFs

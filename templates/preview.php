@@ -63,6 +63,17 @@ if ( ! empty( $extra_lines_raw ) ) {
 // Elements to hide
 $hide_selectors = \PagedWPM\Preview::get_hide_selectors();
 $microtype_mode = \PagedWPM\Preview::get_microtype_mode();
+$abstract_style = \PagedWPM\Preview::get_abstract_settings();
+$show_running_heads = get_option( 'pagedwpm_show_running_heads', '1' ) === '1';
+$journal_head_tpl   = get_option( 'pagedwpm_journal_head_template', '{site_title}{volume_suffix}' );
+$article_head_tpl   = get_option( 'pagedwpm_article_head_template', '{title}' );
+$journal_head       = $show_running_heads ? \PagedWPM\Preview::resolve_template( $journal_head_tpl, $post_id ) : '';
+$article_head       = $show_running_heads ? \PagedWPM\Preview::resolve_template( $article_head_tpl, $post_id ) : '';
+$paged_css          = str_replace(
+	[ '%%PAGEDWPM_JOURNAL_HEAD%%', '%%PAGEDWPM_ARTICLE_HEAD%%' ],
+	[ \PagedWPM\Preview::quote_css_string( $journal_head ), \PagedWPM\Preview::quote_css_string( $article_head ) ],
+	$paged_css
+);
 $asset_version  = rawurlencode( PAGEDWPM_VERSION );
 $preview_config = [
 	'hideSelectors'       => array_values( $hide_selectors ),
@@ -127,10 +138,13 @@ $preview_config = [
 
 			<?php if ( $show_subtitle && ! empty( $subtitle_text ) ) : ?>
 				<?php if ( $subtitle_style === 'abstract' ) : ?>
-					<div class="abstract">
-						<p class="abstract-heading">Abstract</p>
-						<p class="abstract-text"><?php echo esc_html( $subtitle_text ); ?></p>
-					</div>
+					<aside
+						class="abstract pagedwpm-abstract pagedwpm-abstract--<?php echo esc_attr( $abstract_style['style'] ); ?> pagedwpm-abstract-gap--<?php echo esc_attr( $abstract_style['gap'] ); ?>"
+						style="--pagedwpm-abstract-accent: <?php echo esc_attr( $abstract_style['color'] ); ?>; --pagedwpm-abstract-label-font: <?php echo esc_attr( $abstract_style['font'] ); ?>;"
+						aria-label="<?php echo esc_attr( $abstract_style['label'] ); ?>"
+					>
+						<p class="abstract-copy"><span class="abstract-heading"><?php echo esc_html( $abstract_style['label'] ); ?></span><span class="abstract-text"><?php echo esc_html( $subtitle_text ); ?></span></p>
+					</aside>
 				<?php elseif ( $subtitle_style === 'subtitle' ) : ?>
 					<p class="subtitle"><?php echo esc_html( $subtitle_text ); ?></p>
 				<?php else : ?>

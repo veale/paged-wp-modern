@@ -51,17 +51,15 @@
 	size: A4;
 	margin: 25mm 25mm 30mm 25mm;
 
-	@top-center {
-		content: string(doctitle);
-		font-size: 9pt;
-		color: #666;
-		font-style: italic;
-	}
-
 	@bottom-center {
 		content: counter(page);
-		font-size: 9pt;
-		color: #666;
+		color: #163c73;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		font-size: 8pt;
+		font-variant-numeric: tabular-nums;
+		font-weight: 650;
+		letter-spacing: 0.04em;
+		opacity: 0.78;
 	}
 
 	@footnote {
@@ -72,33 +70,46 @@
 	}
 }
 
+/* The opening page keeps its folio but omits the running head. */
 @page :first {
+	@top-left { content: none; }
 	@top-center { content: none; }
-	@bottom-center { content: none; }
+	@top-right { content: none; }
 }
 
 @page :left {
 	margin-left: 30mm;
 	margin-right: 24mm;
-	@bottom-left {
-		content: counter(page);
-		font-size: 9pt;
-		color: #666;
+
+	@top-center {
+		content: %%PAGEDWPM_JOURNAL_HEAD%%;
+		color: #163c73;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		font-size: 7.5pt;
+		font-style: normal;
+		font-weight: 600;
+		letter-spacing: 0.035em;
+		opacity: 0.78;
+		white-space: nowrap;
 	}
-	@bottom-center { content: none; }
 }
 
 @page :right {
 	margin-left: 24mm;
 	margin-right: 30mm;
-	@bottom-right {
-		content: counter(page);
-		font-size: 9pt;
-		color: #666;
-	}
-	@bottom-center { content: none; }
-}
 
+	@top-center {
+		content: %%PAGEDWPM_ARTICLE_HEAD%%;
+		color: #163c73;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		font-size: 7.5pt;
+		font-style: normal;
+		font-weight: 600;
+		letter-spacing: 0.035em;
+		opacity: 0.78;
+		white-space: nowrap;
+	}
+}
 
 /* ==========================================================================
    TYPOGRAPHY
@@ -147,11 +158,6 @@ body {
 		text-wrap: pretty;
 	}
 }
-
-.pagedwpm-header h1 {
-	string-set: doctitle content();
-}
-
 
 /* ==========================================================================
    TITLE BLOCK
@@ -204,28 +210,83 @@ body {
 }
 
 
-/* -- Abstract block -- */
+/* -- Journal abstract -- */
 
-.pagedwpm-header .abstract {
-	margin: 1em 0 1.5em 0;
-	padding: 0 2em;
+.pagedwpm-header .pagedwpm-abstract {
+	--pagedwpm-abstract-accent: #163c73;
+	--pagedwpm-abstract-label-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+	box-sizing: border-box;
+	max-width: 138mm;
+	margin: 14pt auto 4pt;
+	color: var(--pagedwpm-abstract-accent);
+	font-family: 'PagedWPM Source Serif', Georgia, 'Times New Roman', serif;
+	font-size: 9.75pt;
+	line-height: 1.44;
+	opacity: 0.86;
+	orphans: 3;
+	widows: 3;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+}
+
+.pagedwpm-header .abstract-copy {
+	margin: 0;
+	text-align: justify;
+	text-indent: 0;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	hyphenate-limit-chars: 7 3 3;
+	hanging-punctuation: first allow-end last;
 }
 
 .pagedwpm-header .abstract-heading {
-	font-size: 11pt;
-	font-weight: bold;
-	margin: 0 0 0.3em 0;
-	color: #000;
+	display: inline;
+	color: var(--pagedwpm-abstract-accent);
+	font-family: var(--pagedwpm-abstract-label-font);
+	font-size: 8.25pt;
+	font-style: normal;
+	font-weight: 700;
+	font-variant: normal;
+	letter-spacing: 0.025em;
+	line-height: inherit;
+	white-space: nowrap;
 }
 
 .pagedwpm-header .abstract-text {
-	font-size: 10pt;
-	line-height: 1.45;
-	color: #333;
-	margin: 0;
-	text-align: justify;
-	-webkit-hyphens: auto;
-	hyphens: auto;
+	display: inline;
+	color: inherit;
+	font: inherit;
+}
+
+.pagedwpm-abstract-gap--double .abstract-heading {
+	margin-inline-end: 0.7em;
+}
+
+.pagedwpm-abstract-gap--triple .abstract-heading {
+	margin-inline-end: 1.05em;
+}
+
+/* Optional quotation-like rule. */
+.pagedwpm-header .pagedwpm-abstract--rule {
+	padding: 5pt 7mm 5pt 11pt;
+	border-left: 1.25pt solid var(--pagedwpm-abstract-accent);
+}
+
+.pagedwpm-header .pagedwpm-abstract--panel {
+	padding: 9pt 12pt 10pt;
+	border-top: 0.6pt solid var(--pagedwpm-abstract-accent);
+	border-bottom: 0.6pt solid var(--pagedwpm-abstract-accent);
+	background: #f4f6f9;
+}
+
+@supports (background: color-mix(in srgb, black 10%, white)) {
+	.pagedwpm-header .pagedwpm-abstract--panel {
+		background: color-mix(in srgb, var(--pagedwpm-abstract-accent) 6%, white);
+	}
+}
+
+.pagedwpm-header .pagedwpm-abstract--plain {
+	padding: 5pt 0;
 }
 
 
