@@ -127,6 +127,10 @@ async function render(route) {
 		sourceHidden: document.querySelector('body > .pagedwpm-content')?.hidden,
 		pages: document.querySelectorAll('.pagedjs_page').length
 	}));
+	result.screenHintDisplay = await page.$eval('#pagedwpm-print-hint', (hint) => getComputedStyle(hint).display);
+	await page.emulateMediaType('print');
+	result.printHintDisplay = await page.$eval('#pagedwpm-print-hint', (hint) => getComputedStyle(hint).display);
+	await page.emulateMediaType('screen');
 	if (process.env.PAGEDWPM_SCREENSHOT && route === '/normal') {
 		await page.screenshot({ path: process.env.PAGEDWPM_SCREENSHOT, fullPage: true });
 	}
@@ -141,6 +145,8 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.equal(result.failedImages, 0);
 	assert.equal(result.footnoteCalls, 1);
 	assert.equal(result.sourceHidden, true);
+	assert.equal(result.screenHintDisplay, 'block');
+	assert.equal(result.printHintDisplay, 'none');
 	assert.match(result.fontFamily, /PagedWPM Source Serif/);
 	assert.notEqual(result.textIndent, '0px');
 	assert.ok(result.pages > 1);
@@ -152,5 +158,6 @@ test('replaces a permanently pending image and still renders the article end', a
 	assert.equal(result.complete, true);
 	assert.ok(result.failedImages >= 1);
 	assert.equal(result.sourceHidden, true);
+	assert.equal(result.printHintDisplay, 'none');
 	assert.ok(result.pages > 1);
 });

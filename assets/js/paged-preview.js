@@ -243,12 +243,48 @@
 		return flow;
 	}
 
+	function installPrintExclusion() {
+		if (document.getElementById('pagedwpm-print-exclusion')) {
+			return;
+		}
+
+		var style = document.createElement('style');
+		style.id = 'pagedwpm-print-exclusion';
+		style.media = 'print';
+		style.dataset.pagedjsIgnore = 'true';
+		style.textContent = '#pagedwpm-print-hint, #pagedwpm-status {' +
+			'display: none !important; visibility: hidden !important;' +
+			'}';
+		document.head.append(style);
+	}
+
+	function hideControlsForPrint() {
+		document.querySelectorAll('#pagedwpm-print-hint, #pagedwpm-status').forEach(function (control) {
+			control.dataset.pagedwpmDisplay = control.style.display || '';
+			control.style.setProperty('display', 'none', 'important');
+			control.setAttribute('aria-hidden', 'true');
+		});
+	}
+
+	function restoreControlsAfterPrint() {
+		document.querySelectorAll('#pagedwpm-print-hint, #pagedwpm-status').forEach(function (control) {
+			var display = control.dataset.pagedwpmDisplay || '';
+			control.style.removeProperty('display');
+			if (display) {
+				control.style.display = display;
+			}
+			delete control.dataset.pagedwpmDisplay;
+			control.removeAttribute('aria-hidden');
+		});
+	}
+
 	function addPrintHint(flow) {
 		var hint = document.createElement('div');
 		var summary = document.createElement('p');
 		var printButton = document.createElement('button');
 		var dismissButton = document.createElement('button');
 
+		installPrintExclusion();
 		hint.id = 'pagedwpm-print-hint';
 		summary.append(document.createTextNode(message('ready', 'Document ready.') + ' '));
 		if (flow && flow.total) {
@@ -319,6 +355,8 @@
 	}
 
 	window.PagedWPM = { start: start };
+	window.addEventListener('beforeprint', hideControlsForPrint);
+	window.addEventListener('afterprint', restoreControlsAfterPrint);
 	window.addEventListener('unhandledrejection', function (event) {
 		console.error('[PagedWPM] Unhandled promise rejection.', event.reason);
 	});
