@@ -1,0 +1,49 @@
+name: Build WordPress release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      - run: npm ci
+      - name: Validate
+        run: |
+          find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+          npm test
+      - name: Verify tag matches plugin version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          grep -q "Version:     ${VERSION}" paged-wp-modern.php
+          grep -q "PAGEDWPM_VERSION', '${VERSION}'" paged-wp-modern.php
+      - name: Build installable ZIP
+        run: |
+          mkdir -p build/paged-wp-modern
+          rsync -a ./ build/paged-wp-modern/ \
+            --exclude .git --exclude .github --exclude build --exclude node_modules \
+            --exclude tests --exclude package.json --exclude package-lock.json \
+            --exclude .gitignore --exclude .DS_Store --exclude '*.zip'
+          cd build
+          zip -qr paged-wp-modern.zip paged-wp-modern
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" build/paged-wp-modern.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" build/paged-wp-modern.zip --generate-notes --verify-tag
+          fi

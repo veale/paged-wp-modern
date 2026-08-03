@@ -1,11 +1,11 @@
 === Paged WP Modern ===
 
-Contributors: built-with-claude
-Tags: pdf, print, paged, footnotes, mammoth, word
+Contributors: veale
+Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,11 @@ Paged WP Modern turns your WordPress posts and pages into paginated, print-ready
 * Running headers and page numbers
 * [paged_download] shortcode for front-end "View as PDF" button
 * Clean, professional default typography
+* Enhanced academic microtypography by default, with progressive browser fallbacks
+* Resilient image loading: damaged or stalled images cannot truncate the article
+* Local bundled Paged.js — no runtime CDN dependency
+* Locally bundled Source Serif 4 variable font with optical sizing and system-serif fallback
+* Updates from tagged GitHub releases through the normal WordPress updater
 * Configurable footnote detection (works out of the box with Mammoth and Pandoc patterns)
 * No server-side dependencies — runs entirely in the browser using Paged.js
 
@@ -55,6 +60,9 @@ Go to Settings → Paged WP Modern to:
 * Toggle author name and date display
 * Customize the CSS selector used to detect footnote callouts (default works with Mammoth and Pandoc)
 * Add custom Paged Media CSS (change page size, margins, fonts, etc.)
+* Choose enhanced or standard browser typography
+* Configure image and pagination timeouts
+* Opt into unattended installation of tagged GitHub releases
 
 **Common CSS customizations:**
 
@@ -108,6 +116,16 @@ Yes — you can configure the CSS selector in Settings to match any footnote HTM
 
 == Changelog ==
 
+= 2.1.0 =
+* Prevented stalled image requests from silently truncating articles
+* Added resource preflight, timeouts, visible diagnostics, and end-of-document verification
+* Added professional academic microtypography as the progressive default
+* Constrained oversized figures to the printable page area
+* Hardened footnote detection, ID handling, repeated references, and error isolation
+* Bundled Paged.js locally and removed the runtime CDN dependency
+* Added GitHub Actions validation, release ZIP builds, and GitHub release updates
+* Added browser regression tests for valid and permanently pending images
+
 = 2.0.0 =
 * Complete rewrite based on Paged WP by Electric Book Works
 * Added proper footnote support via Paged.js footnotes module
@@ -122,5 +140,6 @@ Yes — you can configure the CSS selector in Settings to match any footnote HTM
 == Credits ==
 
 * [Paged.js](https://pagedjs.org/) by the Coko Foundation — the engine that makes this possible
+* [Source Serif 4](https://github.com/adobe-fonts/source-serif) by Adobe — the default publication serif (SIL Open Font License)
 * [Electric Book Works](https://electricbookworks.com/) — original Paged WP plugin (v1.0.3)
 * [Mammoth](https://github.com/mwilliamson/mammoth.js) by Michael Williamson — the Word-to-HTML converter

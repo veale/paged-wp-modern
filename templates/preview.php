@@ -62,9 +62,32 @@ if ( ! empty( $extra_lines_raw ) ) {
 
 // Elements to hide
 $hide_selectors = \PagedWPM\Preview::get_hide_selectors();
+$microtype_mode = \PagedWPM\Preview::get_microtype_mode();
+$asset_version  = rawurlencode( PAGEDWPM_VERSION );
+$preview_config = [
+	'hideSelectors'       => array_values( $hide_selectors ),
+	'imageTimeoutMs'      => \PagedWPM\Preview::get_timeout_ms( 'pagedwpm_image_timeout', 15 ),
+	'fontTimeoutMs'       => 5000,
+	'paginationTimeoutMs' => \PagedWPM\Preview::get_timeout_ms( 'pagedwpm_pagination_timeout', 120 ),
+	'messages'            => [
+		'preparing'          => __( 'Preparing document…', 'paged-wp-modern' ),
+		'loadingImages'      => __( 'Loading images…', 'paged-wp-modern' ),
+		'imageUnavailable'   => __( 'Image unavailable', 'paged-wp-modern' ),
+		'paginating'         => __( 'Laying out pages…', 'paged-wp-modern' ),
+		'paginationTimeout'  => __( 'Pagination timed out.', 'paged-wp-modern' ),
+		'incomplete'         => __( 'Pagination ended before all article content was rendered.', 'paged-wp-modern' ),
+		'libraryMissing'     => __( 'The local Paged.js library could not be loaded.', 'paged-wp-modern' ),
+		'failed'             => __( 'The document could not be fully paginated.', 'paged-wp-modern' ),
+		'ready'              => __( 'Document ready.', 'paged-wp-modern' ),
+		'pages'              => __( 'pages', 'paged-wp-modern' ),
+		'imageWarnings'      => __( 'image(s) could not be loaded and were replaced.', 'paged-wp-modern' ),
+		'print'              => __( 'Print / Save PDF', 'paged-wp-modern' ),
+		'dismiss'            => __( 'Dismiss', 'paged-wp-modern' ),
+	],
+];
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
+<html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>" class="pagedwpm-microtype-<?php echo esc_attr( $microtype_mode ); ?>">
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -76,14 +99,6 @@ $hide_selectors = \PagedWPM\Preview::get_hide_selectors();
 		echo $paged_css;
 ?>
 	</style>
-
-	<?php if ( ! empty( $hide_selectors ) ) : ?>
-	<style id="pagedwpm-hide">
-		<?php echo esc_html( implode( ",\n", $hide_selectors ) ); ?> {
-			display: none !important;
-		}
-	</style>
-	<?php endif; ?>
 
 	<script>
 		var endNoteCalloutsQuery = <?php echo wp_json_encode( $footnote_sel ); ?>;
@@ -127,55 +142,15 @@ $hide_selectors = \PagedWPM\Preview::get_hide_selectors();
 
 		<div class="pagedwpm-body">
 			<?php the_content(); ?>
+			<span data-pagedwpm-end-marker aria-hidden="true"></span>
 		</div>
 
 	</article>
 
-	<!-- Remove unwanted elements before Paged.js runs -->
-	<?php if ( ! empty( $hide_selectors ) ) : ?>
-	<script>
-	(function() {
-		var selectors = <?php echo wp_json_encode( $hide_selectors ); ?>;
-		selectors.forEach(function(sel) {
-			try {
-				document.querySelectorAll(sel).forEach(function(el) {
-					el.remove();
-				});
-			} catch(e) {}
-		});
-	})();
-	</script>
-	<?php endif; ?>
-
-	<!-- Footnote converter -->
-	<script src="<?php echo esc_url( $plugin_url . 'assets/js/footnote-converter.js' ); ?>"></script>
-
-	<!-- Paged.js -->
-	<script>
-		window.PagedConfig = {
-			auto: false,
-			after: function(flow) {
-				var hint = document.createElement('div');
-				hint.id = 'pagedwpm-print-hint';
-				hint.innerHTML = '<p>Press <kbd>Ctrl+P</kbd> / <kbd>⌘P</kbd> to save as PDF &nbsp; <button onclick="window.print()">Print / Save PDF</button> <button onclick="this.parentNode.parentNode.remove()">Dismiss</button></p>';
-				document.body.insertBefore(hint, document.body.firstChild);
-				console.log('Paged.js: ' + flow.total + ' pages');
-
-				// Auto-trigger print dialog if ?print=true
-				if (new URLSearchParams(window.location.search).get('print') === 'true') {
-					window.print();
-				}
-			}
-		};
-	</script>
-	<script src="https://unpkg.com/pagedjs@<?php echo esc_attr( $pagedjs_ver ); ?>/dist/paged.polyfill.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			if (window.PagedPolyfill) {
-				window.PagedPolyfill.preview();
-			}
-		});
-	</script>
+	<script id="pagedwpm-config" type="application/json"><?php echo wp_json_encode( $preview_config, JSON_HEX_TAG | JSON_HEX_AMP ); ?></script>
+	<script src="<?php echo esc_url( $plugin_url . 'assets/js/footnote-converter.js?ver=' . $asset_version ); ?>"></script>
+	<script src="<?php echo esc_url( $plugin_url . 'assets/js/paged-preview.js?ver=' . $asset_version ); ?>"></script>
+	<script src="<?php echo esc_url( $plugin_url . 'assets/vendor/pagedjs/paged.polyfill.min.js?ver=' . rawurlencode( $pagedjs_ver ) ); ?>"></script>
 
 </body>
 </html>

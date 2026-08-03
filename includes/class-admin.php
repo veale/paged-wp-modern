@@ -27,7 +27,7 @@ class Admin {
 	}
 
 	public function add_settings_link( $links ) {
-		$link = '<a href="' . admin_url( 'options-general.php?page=pagedwpm-settings' ) . '">' . __( 'Settings', 'paged-wp-modern' ) . '</a>';
+		$link = '<a href="' . esc_url( admin_url( 'options-general.php?page=pagedwpm-settings' ) ) . '">' . esc_html__( 'Settings', 'paged-wp-modern' ) . '</a>';
 		array_unshift( $links, $link );
 		return $links;
 	}
@@ -234,6 +234,81 @@ class Admin {
 		);
 
 		// =====================================================================
+		// SECTION: Typesetting and reliability
+		// =====================================================================
+		add_settings_section(
+			'pagedwpm_typesetting',
+			__( 'Typesetting and Reliability', 'paged-wp-modern' ),
+			function() {
+				echo '<p>' . esc_html__( 'Professional browser typography is enabled by default. Resource timeouts prevent a damaged image from truncating the article.', 'paged-wp-modern' ) . '</p>';
+			},
+			'pagedwpm-settings'
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_microtypography', [
+			'type'              => 'string',
+			'default'           => 'enhanced',
+			'sanitize_callback' => [ $this, 'sanitize_microtype' ],
+		] );
+		add_settings_field( 'pagedwpm_microtypography', __( 'Academic microtypography', 'paged-wp-modern' ),
+			[ $this, 'render_select' ], 'pagedwpm-settings', 'pagedwpm_typesetting',
+			[
+				'option'  => 'pagedwpm_microtypography',
+				'options' => [
+					'enhanced' => __( 'Enhanced academic typesetting (default)', 'paged-wp-modern' ),
+					'standard' => __( 'Standard browser typography', 'paged-wp-modern' ),
+				],
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_image_timeout', [
+			'type'              => 'integer',
+			'default'           => 15,
+			'sanitize_callback' => [ $this, 'sanitize_timeout' ],
+		] );
+		add_settings_field( 'pagedwpm_image_timeout', __( 'Image timeout', 'paged-wp-modern' ),
+			[ $this, 'render_number_field' ], 'pagedwpm-settings', 'pagedwpm_typesetting',
+			[
+				'option'      => 'pagedwpm_image_timeout',
+				'default'     => 15,
+				'min'         => 1,
+				'max'         => 300,
+				'suffix'      => __( 'seconds', 'paged-wp-modern' ),
+				'description' => __( 'A stalled image is replaced by a labelled placeholder so the article can finish.', 'paged-wp-modern' ),
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_pagination_timeout', [
+			'type'              => 'integer',
+			'default'           => 120,
+			'sanitize_callback' => [ $this, 'sanitize_timeout' ],
+		] );
+		add_settings_field( 'pagedwpm_pagination_timeout', __( 'Pagination timeout', 'paged-wp-modern' ),
+			[ $this, 'render_number_field' ], 'pagedwpm-settings', 'pagedwpm_typesetting',
+			[
+				'option'      => 'pagedwpm_pagination_timeout',
+				'default'     => 120,
+				'min'         => 5,
+				'max'         => 300,
+				'suffix'      => __( 'seconds', 'paged-wp-modern' ),
+				'description' => __( 'An explicit diagnostic is shown if layout cannot finish.', 'paged-wp-modern' ),
+			]
+		);
+
+		register_setting( 'pagedwpm-settings', 'pagedwpm_auto_updates', [
+			'type'              => 'string',
+			'default'           => '0',
+			'sanitize_callback' => 'sanitize_text_field',
+		] );
+		add_settings_field( 'pagedwpm_auto_updates', __( 'Automatic GitHub updates', 'paged-wp-modern' ),
+			[ $this, 'render_checkbox' ], 'pagedwpm-settings', 'pagedwpm_typesetting',
+			[
+				'option' => 'pagedwpm_auto_updates',
+				'label'  => __( 'Install new tagged GitHub releases automatically using WordPress updates', 'paged-wp-modern' ),
+			]
+		);
+
+		// =====================================================================
 		// SECTION: Custom CSS
 		// =====================================================================
 		add_settings_section(
@@ -262,7 +337,17 @@ class Admin {
 	public function sanitize_css( $input ) {
 		$input = preg_replace( '/<script\b[^>]*>(.*?)<\/script>/is', '', $input );
 		$input = wp_strip_all_tags( $input );
+		$input = str_ireplace( [ '</style', '<style' ], '', $input );
+		$input = str_replace( "\0", '', $input );
 		return $input;
+	}
+
+	public function sanitize_microtype( $input ) {
+		return in_array( $input, [ 'enhanced', 'standard' ], true ) ? $input : 'enhanced';
+	}
+
+	public function sanitize_timeout( $input ) {
+		return max( 1, min( 300, absint( $input ) ) );
 	}
 
 	public function render_settings_page() {
@@ -340,6 +425,22 @@ class Admin {
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $value, $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
+		<?php
+	}
+
+	public function render_number_field( $args ) {
+		$value = get_option( $args['option'], $args['default'] ?? 1 );
+		?>
+		<input type="number"
+			name="<?php echo esc_attr( $args['option'] ); ?>"
+			value="<?php echo esc_attr( $value ); ?>"
+			min="<?php echo esc_attr( $args['min'] ?? 1 ); ?>"
+			max="<?php echo esc_attr( $args['max'] ?? 300 ); ?>"
+			step="1">
+		<?php echo esc_html( $args['suffix'] ?? '' ); ?>
+		<?php if ( ! empty( $args['description'] ) ) : ?>
+			<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 }

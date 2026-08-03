@@ -24,12 +24,24 @@ class Preview {
 		if ( ! $this->is_paged_preview() ) {
 			return $template;
 		}
+		if ( ! is_singular() || ! get_queried_object_id() ) {
+			return $template;
+		}
+
+		nocache_headers();
+		if ( ! headers_sent() ) {
+			header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
+		}
 		return PAGEDWPM_PLUGIN_DIR . 'templates/preview.php';
 	}
 
 	public static function is_paged_preview() {
 		// phpcs:ignore WordPress.Security.NonceVerification
-		return isset( $_GET['pagedwpm'] ) && 'true' === sanitize_text_field( wp_unslash( $_GET['pagedwpm'] ) );
+		$value = get_query_var( 'pagedwpm', '' );
+		if ( '' === $value && isset( $_GET['pagedwpm'] ) ) {
+			$value = sanitize_text_field( wp_unslash( $_GET['pagedwpm'] ) );
+		}
+		return 'true' === $value;
 	}
 
 	public static function get_preview_url( $post_id ) {
@@ -44,12 +56,34 @@ class Preview {
 	 * Get the paged media CSS (default + custom).
 	 */
 	public static function get_paged_css() {
-		$css = file_get_contents( PAGEDWPM_PLUGIN_DIR . 'assets/css/paged-default.css' );
+		$css_path = PAGEDWPM_PLUGIN_DIR . 'assets/css/paged-default.css';
+		$css      = is_readable( $css_path ) ? file_get_contents( $css_path ) : '';
+		if ( false === $css ) {
+			$css = '';
+		}
+		$css = str_replace( '%%PAGEDWPM_ASSET_URL%%', esc_url_raw( PAGEDWPM_PLUGIN_URL ), $css );
 		$custom_css = get_option( 'pagedwpm_custom_css', '' );
 		if ( ! empty( $custom_css ) ) {
 			$css .= "\n/* === Custom CSS === */\n" . $custom_css . "\n";
 		}
 		return $css;
+	}
+
+	/**
+	 * Return the progressive microtypography mode.
+	 */
+	public static function get_microtype_mode() {
+		$mode = get_option( 'pagedwpm_microtypography', 'enhanced' );
+		return in_array( $mode, [ 'enhanced', 'standard' ], true ) ? $mode : 'enhanced';
+	}
+
+	/**
+	 * Get a seconds-based timeout option as milliseconds with safe limits.
+	 */
+	public static function get_timeout_ms( $option, $default ) {
+		$seconds = absint( get_option( $option, $default ) );
+		$seconds = max( 1, min( 300, $seconds ) );
+		return $seconds * 1000;
 	}
 
 	/**
@@ -153,6 +187,9 @@ class Preview {
 		}
 
 		$post        = get_post( $post_id );
+		if ( ! $post ) {
+			return '';
+		}
 		$date_format = self::get_date_format();
 
 		// Simple replacements
@@ -174,10 +211,7 @@ class Preview {
 		$result = preg_replace_callback( '/\{acf:([a-zA-Z0-9_-]+)\}/', function( $matches ) use ( $post_id ) {
 			if ( function_exists( 'get_field' ) ) {
 				$value = get_field( $matches[1], $post_id );
-				if ( is_array( $value ) ) {
-					return implode( ', ', $value );
-				}
-				return (string) $value;
+				return self::stringify_template_value( $value );
 			}
 			return ''; // ACF not installed
 		}, $result );
@@ -185,13 +219,26 @@ class Preview {
 		// Post meta: {meta:key}
 		$result = preg_replace_callback( '/\{meta:([a-zA-Z0-9_-]+)\}/', function( $matches ) use ( $post_id ) {
 			$value = get_post_meta( $post_id, $matches[1], true );
-			if ( is_array( $value ) ) {
-				return implode( ', ', $value );
-			}
-			return (string) $value;
+			return self::stringify_template_value( $value );
 		}, $result );
 
 		return $result;
+	}
+
+	private static function stringify_template_value( $value ) {
+		if ( is_scalar( $value ) || null === $value ) {
+			return (string) $value;
+		}
+		if ( is_array( $value ) ) {
+			$flat = [];
+			array_walk_recursive( $value, function( $item ) use ( &$flat ) {
+				if ( is_scalar( $item ) ) {
+					$flat[] = (string) $item;
+				}
+			} );
+			return implode( ', ', $flat );
+		}
+		return '';
 	}
 
 	/**

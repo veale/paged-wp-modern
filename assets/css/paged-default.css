@@ -5,6 +5,43 @@
  * Includes: typography, footnotes, abstract block, title block styling.
  */
 
+/* Source Serif 4 is bundled locally; the system-serif stack remains fallback. */
+@font-face {
+	font-family: 'PagedWPM Source Serif';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 200 900;
+	src: url('%%PAGEDWPM_ASSET_URL%%assets/vendor/source-serif-4/source-serif-4-latin-ext-opsz-normal.woff2') format('woff2-variations');
+	unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+	font-family: 'PagedWPM Source Serif';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 200 900;
+	src: url('%%PAGEDWPM_ASSET_URL%%assets/vendor/source-serif-4/source-serif-4-latin-opsz-normal.woff2') format('woff2-variations');
+	unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+	font-family: 'PagedWPM Source Serif';
+	font-style: italic;
+	font-display: swap;
+	font-weight: 200 900;
+	src: url('%%PAGEDWPM_ASSET_URL%%assets/vendor/source-serif-4/source-serif-4-latin-ext-opsz-italic.woff2') format('woff2-variations');
+	unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+	font-family: 'PagedWPM Source Serif';
+	font-style: italic;
+	font-display: swap;
+	font-weight: 200 900;
+	src: url('%%PAGEDWPM_ASSET_URL%%assets/vendor/source-serif-4/source-serif-4-latin-opsz-italic.woff2') format('woff2-variations');
+	unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 
 /* ==========================================================================
    PAGE SETUP — A4 default
@@ -12,7 +49,7 @@
 
 @page {
 	size: A4;
-	margin: 25mm 20mm 30mm 20mm;
+	margin: 25mm 25mm 30mm 25mm;
 
 	@top-center {
 		content: string(doctitle);
@@ -41,8 +78,8 @@
 }
 
 @page :left {
-	margin-left: 25mm;
-	margin-right: 20mm;
+	margin-left: 30mm;
+	margin-right: 24mm;
 	@bottom-left {
 		content: counter(page);
 		font-size: 9pt;
@@ -52,8 +89,8 @@
 }
 
 @page :right {
-	margin-left: 20mm;
-	margin-right: 25mm;
+	margin-left: 24mm;
+	margin-right: 30mm;
 	@bottom-right {
 		content: counter(page);
 		font-size: 9pt;
@@ -68,12 +105,47 @@
    ========================================================================== */
 
 body {
-	font-family: 'Georgia', 'Times New Roman', 'Noto Serif', serif;
+	font-family: 'PagedWPM Source Serif', 'Georgia', 'Times New Roman', 'Noto Serif', serif;
 	font-size: 11pt;
-	line-height: 1.5;
+	line-height: 1.48;
 	color: #1a1a1a;
-	orphans: 2;
-	widows: 2;
+	orphans: 3;
+	widows: 3;
+	font-kerning: normal;
+	font-variant-ligatures: common-ligatures contextual;
+	font-optical-sizing: auto;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+/* Progressive microtypography. Unsupported declarations fall back cleanly. */
+.pagedwpm-microtype-enhanced .pagedwpm-body,
+.pagedwpm-microtype-enhanced .pagedwpm-header {
+	font-kerning: normal;
+	font-variant-ligatures: common-ligatures contextual discretionary-ligatures;
+	font-optical-sizing: auto;
+}
+
+.pagedwpm-microtype-enhanced .pagedwpm-body p,
+.pagedwpm-microtype-enhanced .pagedwpm-body li,
+.pagedwpm-microtype-enhanced .abstract-text {
+	text-justify: inter-word;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	hyphenate-limit-chars: 7 3 3;
+	hyphenate-limit-lines: 2;
+	hyphenate-limit-zone: 8%;
+	hanging-punctuation: first allow-end last;
+}
+
+@supports (text-wrap: pretty) {
+	.pagedwpm-microtype-enhanced .pagedwpm-body p,
+	.pagedwpm-microtype-enhanced figcaption,
+	.pagedwpm-microtype-enhanced .abstract-text {
+		text-wrap: pretty;
+	}
 }
 
 .pagedwpm-header h1 {
@@ -162,10 +234,15 @@ body {
    ========================================================================== */
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: 'Georgia', 'Times New Roman', 'Noto Serif', serif;
+	font-family: 'PagedWPM Source Serif', 'Georgia', 'Times New Roman', 'Noto Serif', serif;
 	color: #000;
 	page-break-after: avoid;
 	page-break-inside: avoid;
+	break-after: avoid-page;
+	break-inside: avoid-page;
+	font-kerning: normal;
+	font-variant-ligatures: common-ligatures;
+	text-wrap: balance;
 }
 
 h1 { font-size: 20pt; margin-top: 1.5em; margin-bottom: 0.5em; }
@@ -190,6 +267,40 @@ p {
 	hyphens: auto;
 }
 
+/* Journal-style paragraph rhythm: indentation carries the paragraph break. */
+.pagedwpm-microtype-enhanced .pagedwpm-body p {
+	margin-bottom: 0;
+	text-indent: 1.25em;
+}
+
+.pagedwpm-microtype-enhanced .pagedwpm-body h1 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body h2 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body h3 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body h4 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body h5 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body h6 + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body blockquote p,
+.pagedwpm-microtype-enhanced .pagedwpm-body li p,
+.pagedwpm-microtype-enhanced .pagedwpm-body td p,
+.pagedwpm-microtype-enhanced .pagedwpm-body th p,
+.pagedwpm-microtype-enhanced .pagedwpm-body figure + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body hr + p,
+.pagedwpm-microtype-enhanced .pagedwpm-body .no-indent {
+	text-indent: 0;
+}
+
+.pagedwpm-microtype-enhanced .pagedwpm-body p + h1,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + h2,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + h3,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + h4,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + ul,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + ol,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + blockquote,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + figure,
+.pagedwpm-microtype-enhanced .pagedwpm-body p + table {
+	margin-top: 0.85em;
+}
+
 blockquote {
 	margin: 1em 2em;
 	padding-left: 1em;
@@ -202,6 +313,19 @@ blockquote p {
 	text-align: left;
 }
 
+.pagedwpm-microtype-enhanced blockquote {
+	margin: 1em 2.4em;
+	padding-left: 0;
+	border-left: 0;
+	font-size: 10pt;
+	font-style: normal;
+	line-height: 1.42;
+}
+
+.pagedwpm-microtype-enhanced blockquote p {
+	text-align: justify;
+}
+
 
 /* ==========================================================================
    LINKS
@@ -211,6 +335,14 @@ a {
 	color: #1a1a1a;
 	text-decoration: underline;
 	text-decoration-color: #888;
+	text-decoration-thickness: 0.04em;
+	text-underline-offset: 0.12em;
+	overflow-wrap: anywhere;
+}
+
+abbr, acronym, cite, .citation, .case-citation {
+	-webkit-hyphens: none;
+	hyphens: none;
 }
 
 
@@ -264,6 +396,36 @@ th {
 	font-weight: bold;
 }
 
+.pagedwpm-microtype-enhanced table {
+	border-top: 0.8pt solid #333;
+	border-bottom: 0.8pt solid #333;
+}
+
+.pagedwpm-microtype-enhanced th,
+.pagedwpm-microtype-enhanced td {
+	border: 0;
+	border-bottom: 0.25pt solid #d5d5d5;
+}
+
+.pagedwpm-microtype-enhanced thead th {
+	border-bottom: 0.65pt solid #555;
+	background: transparent;
+}
+
+.pagedwpm-microtype-enhanced tbody tr:last-child th,
+.pagedwpm-microtype-enhanced tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.pagedwpm-microtype-enhanced .references p,
+.pagedwpm-microtype-enhanced .bibliography p,
+.pagedwpm-microtype-enhanced [role="doc-bibliography"] p {
+	padding-left: 1.5em;
+	text-indent: -1.5em;
+	margin-bottom: 0.35em;
+	text-align: left;
+}
+
 
 /* ==========================================================================
    IMAGES
@@ -271,13 +433,21 @@ th {
 
 img {
 	max-width: 100%;
+	max-height: 205mm;
 	height: auto;
+	width: auto;
+	object-fit: contain;
+	object-position: center;
 	page-break-inside: avoid;
+	break-inside: avoid-page;
 }
 
 figure {
 	margin: 1em 0;
 	page-break-inside: avoid;
+	break-inside: avoid-page;
+	max-width: 100%;
+	text-align: center;
 }
 
 figcaption {
@@ -285,6 +455,22 @@ figcaption {
 	color: #666;
 	font-style: italic;
 	margin-top: 0.3em;
+	line-height: 1.35;
+	text-align: left;
+	break-before: avoid-page;
+}
+
+.pagedwpm-image-error {
+	display: block;
+	box-sizing: border-box;
+	min-height: 24mm;
+	padding: 10mm 6mm;
+	border: 0.75pt solid #a33;
+	background: #fff7f7;
+	color: #711;
+	font: italic 9pt/1.4 Georgia, 'Times New Roman', serif;
+	text-align: center;
+	break-inside: avoid-page;
 }
 
 
@@ -315,6 +501,12 @@ pre code {
 	padding: 0;
 }
 
+code, pre, samp, kbd {
+	font-variant-ligatures: none;
+	-webkit-hyphens: none;
+	hyphens: none;
+}
+
 
 /* ==========================================================================
    FOOTNOTES (Paged.js)
@@ -329,6 +521,11 @@ pre code {
 	font-size: 9pt;
 	line-height: 1.4;
 	color: #333;
+	text-align: left;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	orphans: 2;
+	widows: 2;
 }
 
 /* Suppress Paged.js auto-generated numbering — we supply our own */
@@ -400,8 +597,41 @@ hr {
 
 
 /* ==========================================================================
-   PRINT HINT BAR (screen only)
+   PREVIEW STATUS AND PRINT CONTROLS (screen only)
    ========================================================================== */
+
+#pagedwpm-status {
+	position: fixed;
+	top: 18px;
+	left: 50%;
+	z-index: 100000;
+	transform: translateX(-50%);
+	max-width: min(680px, calc(100vw - 40px));
+	box-sizing: border-box;
+	padding: 10px 16px;
+	border-radius: 5px;
+	background: #172554;
+	color: #fff;
+	box-shadow: 0 3px 14px rgba(0, 0, 0, 0.25);
+	font: 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	text-align: left;
+}
+
+#pagedwpm-status[data-state="error"] {
+	background: #7f1d1d;
+}
+
+.pagedwpm-error-detail {
+	max-height: 180px;
+	margin: 8px 0 0;
+	padding: 8px;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	background: rgba(0, 0, 0, 0.2);
+	color: #fff;
+	font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+	overflow: auto;
+	white-space: pre-wrap;
+}
 
 #pagedwpm-print-hint {
 	position: fixed;
@@ -449,7 +679,8 @@ hr {
 }
 
 @media print {
-	#pagedwpm-print-hint {
+	#pagedwpm-print-hint,
+	#pagedwpm-status {
 		display: none !important;
 	}
 }
