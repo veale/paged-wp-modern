@@ -124,6 +124,7 @@ async function render(route) {
 		footnoteCalls: document.querySelectorAll('.pagedjs_pages .pagedwpm-fn-call').length,
 		fontFamily: getComputedStyle(document.querySelector('.pagedjs_pages p')).fontFamily,
 		textIndent: getComputedStyle(document.querySelector('.pagedjs_pages p')).textIndent,
+		sourceHidden: document.querySelector('body > .pagedwpm-content')?.hidden,
 		pages: document.querySelectorAll('.pagedjs_page').length
 	}));
 	if (process.env.PAGEDWPM_SCREENSHOT && route === '/normal') {
@@ -139,6 +140,7 @@ test('renders all content and converts footnotes with a valid image', async () =
 	assert.equal(result.complete, true);
 	assert.equal(result.failedImages, 0);
 	assert.equal(result.footnoteCalls, 1);
+	assert.equal(result.sourceHidden, true);
 	assert.match(result.fontFamily, /PagedWPM Source Serif/);
 	assert.notEqual(result.textIndent, '0px');
 	assert.ok(result.pages > 1);
@@ -149,5 +151,6 @@ test('replaces a permanently pending image and still renders the article end', a
 	assert.equal(result.error, '');
 	assert.equal(result.complete, true);
 	assert.ok(result.failedImages >= 1);
+	assert.equal(result.sourceHidden, true);
 	assert.ok(result.pages > 1);
 });

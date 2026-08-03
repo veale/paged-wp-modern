@@ -5,7 +5,7 @@ Tags: pdf, print, paged, footnotes, mammoth, typography
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,11 @@ The current version requires the browser print dialog. Fully automated PDF gener
 Yes — you can configure the CSS selector in Settings to match any footnote HTML pattern. The default selector works with Mammoth and Pandoc output.
 
 == Changelog ==
+
+= 2.1.1 =
+* Fixed the unpaginated source article remaining visible above the paginated output
+* Paginate a detached source clone while retaining the original only as an error fallback
+* Added regression coverage preventing duplicate visible article content
 
 = 2.1.0 =
 * Prevented stalled image requests from silently truncating articles

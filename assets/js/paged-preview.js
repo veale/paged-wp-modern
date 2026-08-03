@@ -209,8 +209,16 @@
 	}
 
 	function paginationWithTimeout(timeoutMs) {
-		var content = document.querySelector('.pagedwpm-content');
-		var previewPromise = window.PagedPolyfill.preview(content || undefined);
+		var source = document.querySelector('.pagedwpm-content');
+		var content = source ? source.cloneNode(true) : undefined;
+
+		// Paged.js renders the detached clone. Keep the source available for an
+		// accessible error fallback, but do not leave it above the generated pages.
+		if (source) {
+			source.hidden = true;
+		}
+
+		var previewPromise = window.PagedPolyfill.preview(content);
 		var timer;
 		var timeoutPromise = new Promise(function (_, reject) {
 			timer = window.setTimeout(function () {
@@ -268,6 +276,10 @@
 
 	function showError(status, error) {
 		var detail = document.createElement('pre');
+		var source = document.querySelector('.pagedwpm-content');
+		if (source) {
+			source.hidden = false;
+		}
 		setStatus(status, message('failed', 'The document could not be fully paginated.'), 'error');
 		detail.className = 'pagedwpm-error-detail';
 		detail.textContent = error && error.message ? error.message : String(error);
